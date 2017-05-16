@@ -1,0 +1,22 @@
+{
+  "name": "tzlion/tweet-trumpet",
+  "description": "twitter api stuffs",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "taizou",
+      "homepage": "https://github.com/tzlion"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "TzLion\\TweetTrumpet\\": ""
+    }
+  },
+  "require": {
+    "php": ">=5.4",
+    "ext-json": "*",
+    "ext-bcmath": "*",
+    "j7mbo/twitter-api-php": "1.0.5"
+  }
+}
