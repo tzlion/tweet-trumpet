@@ -1,3 +1,3 @@
 # Tweet Trumpet
 
-for tweetin
+Twitter API wrapper supporting basic searching/retrieving/tweeting functionality.

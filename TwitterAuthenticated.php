@@ -13,37 +13,64 @@ abstract class TwitterAuthenticated
 
     private static $defaultConfig;
 
+    /**
+     * Set authentication settings to be used in any instance of TwitterAuthenticated
+     * if they are not passed into the constructor
+     *
+     * @param array $config Array of authentication settings to pass to TwitterAPIExchange.
+     *                      Should contain: oauth_access_token, oauth_access_token_secret, consumer_key, consumer_secret
+     */
     public static function setGlobalOauthConfig($config)
     {
         self::$defaultConfig = $config;
     }
 
-    public function __construct( $config = null )
+    /**
+     * TwitterAuthenticated constructor.
+     *
+     * @param array $config Array of authentication settings to pass to TwitterAPIExchange.
+     *                      Should contain: oauth_access_token, oauth_access_token_secret, consumer_key, consumer_secret
+     *
+     * @throws \Exception
+     */
+    public function __construct($config = null)
     {
-        if ( $config ) $this->settings = $config;
+        if ($config) $this->settings = $config;
         else $this->settings = self::$defaultConfig;
-        if ( !$this->settings )
-            throw new \Exception( "Missing oauth settings! Must call TwitterAuthenticated::setGlobalOauthConfig or pass in settings in the constructor");
-        $this->tw = new \TwitterAPIExchange( $this->settings );
+        if (!$this->settings)
+            throw new \Exception("Missing oauth settings! Must call TwitterAuthenticated::setGlobalOauthConfig or pass in settings in the constructor");
+        $this->tw = new \TwitterAPIExchange($this->settings);
     }
 
-    protected function get( $url, $queryData )
+    /**
+     * @param string $url
+     * @param array $queryData
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function get($url, $queryData)
     {
-        $get = http_build_query( $queryData );
+        $get = http_build_query($queryData);
         $result = $this->tw
-            ->setGetfield( "?$get" )
-            ->buildOauth($url,"GET")
+            ->setGetfield("?$get")
+            ->buildOauth($url, "GET")
             ->performRequest();
-        return json_decode( $result, true );
+        return json_decode($result, true);
     }
 
-    protected function post( $url, $postData )
+    /**
+     * @param string $url
+     * @param array $postData
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function post($url, $postData)
     {
         $result = $this->tw->buildOauth($url, "POST")
             ->setPostfields($postData)
             ->performRequest();
-        return json_decode( $result, true );
+        return json_decode($result, true);
     }
-
-
-} 
+}

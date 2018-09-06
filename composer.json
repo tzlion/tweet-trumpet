@@ -1,6 +1,6 @@
 {
   "name": "tzlion/tweet-trumpet",
-  "description": "twitter api stuffs",
+  "description": "twitter API wrapper",
   "license": "MIT",
   "authors": [
     {
