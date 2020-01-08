@@ -29,7 +29,8 @@ class TweetRetriever extends TwitterAuthenticated
             "include_rts" => $incRts,
             "screen_name" => $username,
             "exclude_replies" => !$incReplies,
-            "count" => 200
+            "count" => 200,
+            "tweet_mode" => "extended"
         ];
         if ($maxId) $params["max_id"] = $maxId;
         $tweets = $this->get(self::TWITTER_API_BASE_URL . "/statuses/user_timeline.json", $params);
@@ -191,7 +192,7 @@ class TweetRetriever extends TwitterAuthenticated
     {
         $textOnlyTweets = [];
         foreach($tweets as $tweet) {
-            $tweetText = $tweet["text"];
+            $tweetText = $tweet['full_text'] ?: $tweet["text"];
             $tweetUrls = $tweet["entities"]["urls"];
             $tweetMedia = isset($tweet["entities"]["media"]) ? $tweet["entities"]["media"] : [];
 
