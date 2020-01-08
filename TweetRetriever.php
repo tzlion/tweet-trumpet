@@ -59,7 +59,8 @@ class TweetRetriever extends TwitterAuthenticated
             "q" => $query,
             "result_type" => "recent",
             "lang" => $lang,
-            "count" => 100
+            "count" => 100,
+            "tweet_mode" => "extended"
         ];
         if ( $maxId ) $params["max_id"] = $maxId;
         $tweets = $this->get(self::TWITTER_API_BASE_URL . "/search/tweets.json", $params)['statuses'] ?: [];
