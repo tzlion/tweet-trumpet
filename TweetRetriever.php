@@ -5,9 +5,19 @@ class TweetRetriever extends TwitterAuthenticated
 {
     private $lastIds = [];
 
-    // todo: make these configurable
-    const FILTER_TWEETS_WITH_URLS = true;
-    const FILTER_TWEETS_WITH_MENTIONS = true;
+    private $includeTweetsWithUrls = true;
+    private $includeTweetsWithMentions = true;
+    private $includeRetweets = false;
+    private $includeSelfRetweets = false;
+
+    public function setFilterConfig($includeTweetsWithUrls, $includeTweetsWithMentions,
+                                    $includeRetweets, $includeSelfRetweets)
+    {
+        $this->includeTweetsWithUrls = $includeTweetsWithUrls;
+        $this->includeTweetsWithMentions = $includeTweetsWithMentions;
+        $this->includeRetweets = $includeRetweets;
+        $this->includeSelfRetweets = $includeSelfRetweets;
+    }
 
     /**
      * Get a user's tweets
@@ -103,7 +113,7 @@ class TweetRetriever extends TwitterAuthenticated
      */
     public function getFilteredTweets($username, $continueFromLast = false, $incMediaTweets = false)
     {
-        $tweets = $this->getTweets($username, $continueFromLast);
+        $tweets = $this->getTweets($username, $continueFromLast, $this->includeRetweets || $this->includeSelfRetweets);
         return $this->filterTweets($tweets, $incMediaTweets);
     }
 
@@ -193,12 +203,27 @@ class TweetRetriever extends TwitterAuthenticated
     {
         $textOnlyTweets = [];
         foreach($tweets as $tweet) {
+
+            if (isset($tweet['retweeted_status'])) {
+                if (!$this->includeRetweets && !$this->includeSelfRetweets) {
+                    continue;
+                }
+                $isSelfRetweet = $tweet['user']['id'] != $tweet['retweeted_status']['user']['id'];
+                if ($this->includeSelfRetweets && !$this->includeRetweets && !$isSelfRetweet) {
+                    continue;
+                }
+                if ($this->includeRetweets && !$this->includeSelfRetweets && $isSelfRetweet) {
+                    continue;
+                }
+                $tweet = $tweet['retweeted_status'];
+            }
+
             $tweetText = $tweet['full_text'] ?: $tweet["text"];
             $tweetUrls = $tweet["entities"]["urls"];
             $tweetMedia = isset($tweet["entities"]["media"]) ? $tweet["entities"]["media"] : [];
 
-            if ($tweetUrls && self::FILTER_TWEETS_WITH_URLS) continue;
-            if ($tweet["entities"]["user_mentions"] && self::FILTER_TWEETS_WITH_MENTIONS) continue;
+            if ($tweetUrls && !$this->includeTweetsWithUrls) continue;
+            if ($tweet["entities"]["user_mentions"] && !$this->includeTweetsWithMentions) continue;
             if ($tweetMedia && !$incMediaTweets) continue;
 
             $tweetText = preg_replace("~https?://[^ ]+~","",$tweetText);
