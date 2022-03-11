@@ -5,8 +5,8 @@ class TweetRetriever extends TwitterAuthenticated
 {
     private $lastIds = [];
 
-    private $includeTweetsWithUrls = true;
-    private $includeTweetsWithMentions = true;
+    private $includeTweetsWithUrls = false;
+    private $includeTweetsWithMentions = false;
     private $includeRetweets = false;
     private $includeSelfRetweets = false;
 
