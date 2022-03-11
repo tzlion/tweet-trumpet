@@ -208,7 +208,7 @@ class TweetRetriever extends TwitterAuthenticated
                 if (!$this->includeRetweets && !$this->includeSelfRetweets) {
                     continue;
                 }
-                $isSelfRetweet = $tweet['user']['id'] != $tweet['retweeted_status']['user']['id'];
+                $isSelfRetweet = $tweet['user']['id'] == $tweet['retweeted_status']['user']['id'];
                 if ($this->includeSelfRetweets && !$this->includeRetweets && !$isSelfRetweet) {
                     continue;
                 }
