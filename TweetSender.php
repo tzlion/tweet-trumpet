@@ -43,14 +43,14 @@ class TweetSender extends TwitterAuthenticated
      */
     private function doTweet($message = null, $mediaId = null)
     {
-        $url = self::TWITTER_API_BASE_URL . '/statuses/update.json';
+        $url = self::TWITTER_API_BASE_URL_V2 . '/tweets';
         $post = [];
         if ($message) {
-            $post["status"] = $message;
+            $post["text"] = $message;
         }
         if ($mediaId) {
-            $post["media_ids"] = $mediaId;
+            $post["media"]["media_ids"] = [$mediaId];
         }
-        return $this->post( $url, $post );
+        return $this->post( $url, $post, true );
     }
 }

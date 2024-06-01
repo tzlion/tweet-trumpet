@@ -9,6 +9,7 @@ abstract class TwitterAuthenticated
     private $settings;
 
     const TWITTER_API_BASE_URL = "https://api.twitter.com/1.1";
+    const TWITTER_API_BASE_URL_V2 = "https://api.twitter.com/2";
     const TWITTER_UPLOAD_BASE_URL = "https://upload.twitter.com/1.1";
 
     private static $defaultConfig;
@@ -66,11 +67,11 @@ abstract class TwitterAuthenticated
      *
      * @throws \Exception
      */
-    protected function post($url, $postData)
+    protected function post($url, $postData, $v2 = false)
     {
-        $result = $this->tw->buildOauth($url, "POST")
-            ->setPostfields($postData)
-            ->performRequest();
+        $result = $this->tw->buildOauth($url, "POST", $v2)
+            ->setPostfields($postData, $v2)
+            ->performRequest(true, [], $v2);
         return json_decode($result, true);
     }
 }
