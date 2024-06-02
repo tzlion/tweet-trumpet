@@ -17,6 +17,6 @@
     "php": ">=5.4",
     "ext-json": "*",
     "ext-bcmath": "*",
-    "j7mbo/twitter-api-php": "1.0.5"
+    "tzlion/deadend-api-php": "0.1.0"
   }
 }
