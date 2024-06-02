@@ -17,6 +17,6 @@
     "php": ">=5.4",
     "ext-json": "*",
     "ext-bcmath": "*",
-    "tzlion/deadend-api-php": "0.1.0"
+    "tzlion/deadend-api-php": "0.2.0"
   }
 }

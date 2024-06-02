@@ -69,9 +69,9 @@ abstract class TwitterAuthenticated
      */
     protected function post($url, $postData, $v2 = false)
     {
-        $result = $this->tw->buildOauth($url, "POST", $v2)
+        $result = $this->tw->buildOauth($url, "POST")
             ->setPostfields($postData, $v2)
-            ->performRequest(true, [], $v2);
+            ->performRequest();
         return json_decode($result, true);
     }
 }
