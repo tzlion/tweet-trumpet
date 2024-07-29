@@ -5,7 +5,7 @@ namespace TzLion\TweetTrumpet\Mastodon;
 use cjrasmussen\MastodonApi\MastodonApi;
 use Exception;
 
-class MastodonAuthenticated
+abstract class MastodonAuthenticated
 {
     private static ?string $defaultInstance = null;
     private static ?string $defaultAccessToken = null;
