@@ -6,11 +6,11 @@ use TzLion\TweetTrumpet\Common\FileHelper;
 
 class BlueskySender extends BlueskyAuthenticated
 {
-    public function post(string $message, ?string $filename = null)
+    public function post(string $message, ?string $filename = null, string $lang = 'en'): object
     {
         $record = [
             'text' => $message,
-            'langs' => ['en'],
+            'langs' => [$lang],
             'createdAt' => date('c'),
             '$type' => 'app.bsky.feed.post',
         ];

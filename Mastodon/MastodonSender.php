@@ -7,7 +7,7 @@ use TzLion\TweetTrumpet\Common\FileHelper;
 
 class MastodonSender extends MastodonAuthenticated
 {
-    public function post(string $message, ?string $filename = null, bool $sensitive = false)
+    public function post(string $message, ?string $filename = null, bool $sensitive = false): object
     {
         $status = ['status' => $message, 'sensitive' => $sensitive];
 
@@ -19,7 +19,7 @@ class MastodonSender extends MastodonAuthenticated
                 'file' => $curl_file
             ], null, true);
             if (!$uploadRes || !($uploadRes->id ?? null)) {
-                throw new Exception('Error: ' . $uploadRes->error ?? "Unknown");
+                throw new Exception('Error uploading file: ' . $uploadRes->error ?? "Unknown");
             }
             $status['media_ids'] = [$uploadRes->id];
         }
