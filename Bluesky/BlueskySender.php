@@ -2,6 +2,8 @@
 
 namespace TzLion\TweetTrumpet\Bluesky;
 
+use TzLion\TweetTrumpet\Common\FileHelper;
+
 class BlueskySender extends BlueskyAuthenticated
 {
     public function post(string $message, ?string $filename = null)
@@ -14,15 +16,7 @@ class BlueskySender extends BlueskyAuthenticated
         ];
 
         if ($filename) {
-            if (preg_match("/\\.png$/", $filename)) {
-                $mimetype = "image/png";
-            } else if (preg_match("/\\.jpe?g$/", $filename)) {
-                $mimetype = "image/jpeg";
-            } else if (preg_match("/\\.gif$/", $filename)) {
-                $mimetype = "image/gif";
-            } else {
-                throw new \Exception("Couldn't detect image type");
-            }
+            $mimetype = FileHelper::determineMimeType($filename);
             $body = file_get_contents($filename);
             $response = $this->blueskyApi->request('POST', 'com.atproto.repo.uploadBlob', [], $body, $mimetype);
             $image = $response->blob;
