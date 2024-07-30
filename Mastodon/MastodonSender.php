@@ -21,6 +21,9 @@ class MastodonSender extends MastodonAuthenticated
             if (!$uploadRes || !($uploadRes->id ?? null)) {
                 throw new Exception('Error uploading file: ' . $uploadRes->error ?? "Unknown");
             }
+            if ($uploadRes->type !== "image") {
+                throw new Exception('File not recognised as image');
+            }
             $status['media_ids'] = [$uploadRes->id];
         }
 
