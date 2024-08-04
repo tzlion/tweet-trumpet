@@ -24,6 +24,11 @@ class BlueskySender extends BlueskyAuthenticated
             '$type' => 'app.bsky.feed.post',
         ];
 
+        $facets = $this->determineFacets($message);
+        if ($facets) {
+            $record['facets'] = $facets;
+        }
+
         if ($attachments) {
             $record['embed'] = [
                 '$type' => 'app.bsky.embed.images',
@@ -62,6 +67,41 @@ class BlueskySender extends BlueskyAuthenticated
             'record' => $record,
         ];
         return $this->blueskyApi->request('POST', 'com.atproto.repo.createRecord', $args);
+    }
+
+    // fucking hell
+    // todo: hashtags? mentions????
+    private function determineFacets(string $message): array
+    {
+        $facets = [];
+
+        $linkPositions = [];
+        $currentLinkStart = null;
+        for ($char = 0; $char < strlen($message); $char++) {
+            if ($currentLinkStart === null && (substr($message, $char, 7) === "http://" || substr($message, $char, 8) === "https://")) {
+                $currentLinkStart = $char;
+            }
+            if ($currentLinkStart !== null) {
+                $thisChar = substr($message, $char, 1);
+                if (preg_match("/\s/", $thisChar)) {
+                    $linkPositions[] = [$currentLinkStart, $char];
+                    $currentLinkStart = null;
+                }
+            }
+        }
+        if ($currentLinkStart !== null) {
+            $linkPositions[] = [$currentLinkStart, $char];
+        }
+        foreach ($linkPositions as $linkPosition) {
+            $facets[] = [
+                'index' => ['byteStart' => $linkPosition[0], 'byteEnd' => $linkPosition[1]],
+                'features' => [
+                    ['$type' => 'app.bsky.richtext.facet#link', 'uri' => substr($message, $linkPosition[0], $linkPosition[1] - $linkPosition[0])]
+                ]
+            ];
+        }
+
+        return $facets;
     }
 
     private function findRootOfPost(StrongReference $ref): StrongReference
