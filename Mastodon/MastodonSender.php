@@ -12,7 +12,7 @@ class MastodonSender extends MastodonAuthenticated
      * @param string $message
      * @param Attachment[] $filenames
      * @param bool $sensitive
-     * @return object
+     * @return object As returned from API. Useful properties: id, url, uri
      */
     public function post(string $message, array $attachments = [], bool $sensitive = false,
                          ?string $inReplyToId = null): object
