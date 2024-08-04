@@ -14,7 +14,8 @@ class MastodonSender extends MastodonAuthenticated
      * @param bool $sensitive
      * @return object
      */
-    public function post(string $message, array $attachments = [], bool $sensitive = false): object
+    public function post(string $message, array $attachments = [], bool $sensitive = false,
+                         ?string $inReplyToId = null): object
     {
         $status = ['status' => $message, 'sensitive' => $sensitive];
 
@@ -23,6 +24,9 @@ class MastodonSender extends MastodonAuthenticated
             foreach ($attachments as $attachment) {
                 $status['media_ids'][] = $this->uploadFile($attachment);
             }
+        }
+        if ($inReplyToId) {
+            $status['in_reply_to_id'] = $inReplyToId;
         }
 
         return $this->mastodonApi->request('POST', 'v1/statuses', $status);

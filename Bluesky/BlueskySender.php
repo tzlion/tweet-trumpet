@@ -2,6 +2,7 @@
 
 namespace TzLion\TweetTrumpet\Bluesky;
 
+use TzLion\TweetTrumpet\Bluesky\Object\StrongReference;
 use TzLion\TweetTrumpet\Common\FileHelper;
 use TzLion\TweetTrumpet\Common\Object\Attachment;
 
@@ -13,7 +14,7 @@ class BlueskySender extends BlueskyAuthenticated
      * @param string $lang
      * @return object
      */
-    public function post(string $message, array $attachments = [], string $lang = 'en'): object
+    public function post(string $message, array $attachments = [], string $lang = 'en', ?StrongReference $inReplyTo = null): object
     {
         $record = [
             'text' => $message,
@@ -40,11 +41,31 @@ class BlueskySender extends BlueskyAuthenticated
             }
         }
 
+        if ($inReplyTo) {
+            $root = $this->findRootOfPost($inReplyTo);
+            $record['reply'] = [
+                'root' => [
+                    'uri' => $root->getUri(),
+                    'cid' => $root->getCid()
+                ],
+                'parent' => [
+                    'uri' => $inReplyTo->getUri(),
+                    'cid' => $inReplyTo->getCid()
+                ]
+            ];
+        }
+
         $args = [
             'collection' => 'app.bsky.feed.post',
             'repo' => $this->blueskyApi->getAccountDid(),
             'record' => $record,
         ];
+        // todo return strong ref
         return $this->blueskyApi->request('POST', 'com.atproto.repo.createRecord', $args);
+    }
+
+    private function findRootOfPost(StrongReference $ref): StrongReference
+    {
+        // todo
     }
 }

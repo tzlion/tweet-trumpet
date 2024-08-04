@@ -12,18 +12,14 @@ class TweetSender extends TwitterAuthenticated
      *
      * @throws \Exception
      */
-    public function tweet($message, array $attachments = [])
+    public function tweet($message, array $attachments = [], ?string $inReplyToId = null)
     {
-        if ($attachments) {
-            $mediaids = [];
-            foreach ($attachments as $attachment) {
-                $fileResult = $this->uploadFile($attachment);
-                $mediaids[] = $fileResult['media_id_string'];
-            }
-            return $this->doTweet($message, $mediaids);
-        } else {
-            return $this->doTweet($message);
+        $mediaids = [];
+        foreach ($attachments as $attachment) {
+            $fileResult = $this->uploadFile($attachment);
+            $mediaids[] = $fileResult['media_id_string'];
         }
+        return $this->doTweet($message, $mediaids, $inReplyToId);
     }
 
     /**
@@ -59,7 +55,7 @@ class TweetSender extends TwitterAuthenticated
      *
      * @throws \Exception
      */
-    private function doTweet($message = null, array $mediaIds = [])
+    private function doTweet($message = null, array $mediaIds = [], ?string $inReplyToId = null)
     {
         $url = self::TWITTER_API_BASE_URL_V2 . '/tweets';
         $post = [];
@@ -68,6 +64,9 @@ class TweetSender extends TwitterAuthenticated
         }
         if ($mediaIds) {
             $post["media"]["media_ids"] = $mediaIds;
+        }
+        if ($inReplyToId) {
+            $post['reply']['in_reply_to_tweet_id'] = $inReplyToId;
         }
         return $this->post( $url, $post, true );
     }
