@@ -5,16 +5,20 @@ class TweetSender extends TwitterAuthenticated
 {
     /**
      * @param string $message Text of the tweet to tweet
-     * @param string|null $filename Filename of a media file to attach (optional)
+     * @param array $filenames Filenames of media files to attach
      * @return array Response from Twitter API
      *
      * @throws \Exception
      */
-    public function tweet($message, $filename = null)
+    public function tweet($message, array $filenames = [])
     {
-        if ($filename) {
-            $fileResult = $this->uploadFile($filename);
-            return $this->doTweet($message, $fileResult["media_id_string"]);
+        if ($filenames) {
+            $mediaids = [];
+            foreach ($filenames as $filename) {
+                $fileResult = $this->uploadFile($filename);
+                $mediaids[] = $fileResult['media_id_string'];
+            }
+            return $this->doTweet($message, $mediaids);
         } else {
             return $this->doTweet($message);
         }
@@ -36,20 +40,20 @@ class TweetSender extends TwitterAuthenticated
 
     /**
      * @param string|null $message
-     * @param string|null $mediaId
+     * @param $mediaIds $mediaId
      * @return array
      *
      * @throws \Exception
      */
-    private function doTweet($message = null, $mediaId = null)
+    private function doTweet($message = null, array $mediaIds = [])
     {
         $url = self::TWITTER_API_BASE_URL_V2 . '/tweets';
         $post = [];
         if ($message) {
             $post["text"] = $message;
         }
-        if ($mediaId) {
-            $post["media"]["media_ids"] = [$mediaId];
+        if ($mediaIds) {
+            $post["media"]["media_ids"] = $mediaIds;
         }
         return $this->post( $url, $post, true );
     }
