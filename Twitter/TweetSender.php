@@ -42,7 +42,8 @@ class TweetSender extends TwitterAuthenticated
                     'alt_text' => [
                         'text' => $attachment->getAltText(),
                     ]
-                ]
+                ],
+                true
             );
         }
         return $res;
