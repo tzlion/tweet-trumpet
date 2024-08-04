@@ -30,13 +30,16 @@ class MastodonSender extends MastodonAuthenticated
 
     private function uploadFile(Attachment $attachment): string
     {
-        // todo: alt text
         $mimetype = FileHelper::determineMimeType($attachment->getFilename());
         $ext = array_reverse(explode(".", $attachment->getFilename()))[0];
         $curl_file = curl_file_create($attachment->getFilename(), $mimetype, "image.$ext");
-        $uploadRes = $this->mastodonApi->request('POST', 'v1/media', [
+        $req = [
             'file' => $curl_file
-        ], null, true);
+        ];
+        if ($attachment->getAltText()) {
+            $req['description'] = $attachment->getAltText();
+        }
+        $uploadRes = $this->mastodonApi->request('POST', 'v1/media', $req, null, true);
         if (!$uploadRes || !($uploadRes->id ?? null)) {
             throw new Exception('Error uploading file: ' . $uploadRes->error ?? "Unknown");
         }

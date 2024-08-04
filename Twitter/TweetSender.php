@@ -34,11 +34,22 @@ class TweetSender extends TwitterAuthenticated
      */
     private function uploadFile(Attachment $attachment)
     {
-        // todo: alt text
         $file = base64_encode(file_get_contents($attachment->getFilename()));
         $url = self::TWITTER_UPLOAD_BASE_URL . "/media/upload.json";
         $post["media_data"] = $file;
-        return $this->post($url, $post);
+        $res = $this->post($url, $post);
+        if ($attachment->getAltText()) {
+            $this->post(
+                self::TWITTER_UPLOAD_BASE_URL . "/media/metadata/create.json",
+                [
+                    'media_id' => $res['media_id_string'],
+                    'alt_text' => [
+                        'text' => $attachment->getAltText(),
+                    ]
+                ]
+            );
+        }
+        return $res;
     }
 
     /**
