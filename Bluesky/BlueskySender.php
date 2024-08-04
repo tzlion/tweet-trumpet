@@ -70,33 +70,61 @@ class BlueskySender extends BlueskyAuthenticated
     }
 
     // fucking hell
-    // todo: hashtags? mentions????
+    // todo: mentions????
     private function determineFacets(string $message): array
     {
         $facets = [];
 
         $linkPositions = [];
+        $hashtagPositions = [];
         $currentLinkStart = null;
+        $currentHashtagStart = null;
         for ($char = 0; $char < strlen($message); $char++) {
-            if ($currentLinkStart === null && (substr($message, $char, 7) === "http://" || substr($message, $char, 8) === "https://")) {
+            $thisChar = substr($message, $char, 1);
+            if ($currentLinkStart === null && $currentHashtagStart === null &&
+                (substr($message, $char, 7) === "http://" || substr($message, $char, 8) === "https://")) {
                 $currentLinkStart = $char;
             }
             if ($currentLinkStart !== null) {
-                $thisChar = substr($message, $char, 1);
                 if (preg_match("/\s/", $thisChar)) {
                     $linkPositions[] = [$currentLinkStart, $char];
                     $currentLinkStart = null;
+                }
+            }
+            if ($currentLinkStart === null && $currentHashtagStart === null
+                && $thisChar === "#" && ($char === 0 || preg_match("/\s/", substr($message, $char-1, 1)))) {
+                $currentHashtagStart = $char;
+            }
+            if ($currentHashtagStart !== null) {
+                if (preg_match("/\s/", $thisChar)) {
+                    $hashtagPositions[] = [$currentHashtagStart, $char];
+                    $currentHashtagStart = null;
                 }
             }
         }
         if ($currentLinkStart !== null) {
             $linkPositions[] = [$currentLinkStart, $char];
         }
+        if ($currentHashtagStart !== null) {
+            $hashtagPositions[] = [$currentHashtagStart, $char];
+        }
         foreach ($linkPositions as $linkPosition) {
             $facets[] = [
                 'index' => ['byteStart' => $linkPosition[0], 'byteEnd' => $linkPosition[1]],
                 'features' => [
                     ['$type' => 'app.bsky.richtext.facet#link', 'uri' => substr($message, $linkPosition[0], $linkPosition[1] - $linkPosition[0])]
+                ]
+            ];
+        }
+        foreach ($hashtagPositions as $hashtagPosition) {
+            $tag = substr($message, $hashtagPosition[0] + 1, $hashtagPosition[1] - ($hashtagPosition[0] + 1));
+            if (!$tag) {
+                continue;
+            }
+            $facets[] = [
+                'index' => ['byteStart' => $hashtagPosition[0], 'byteEnd' => $hashtagPosition[1]],
+                'features' => [
+                    ['$type' => 'app.bsky.richtext.facet#tag', 'tag' => $tag]
                 ]
             ];
         }
