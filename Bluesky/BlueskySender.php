@@ -3,10 +3,17 @@
 namespace TzLion\TweetTrumpet\Bluesky;
 
 use TzLion\TweetTrumpet\Common\FileHelper;
+use TzLion\TweetTrumpet\Common\Object\Attachment;
 
 class BlueskySender extends BlueskyAuthenticated
 {
-    public function post(string $message, array $filenames = [], string $lang = 'en'): object
+    /**
+     * @param string $message
+     * @param Attachment[] $attachments
+     * @param string $lang
+     * @return object
+     */
+    public function post(string $message, array $attachments = [], string $lang = 'en'): object
     {
         $record = [
             'text' => $message,
@@ -15,19 +22,19 @@ class BlueskySender extends BlueskyAuthenticated
             '$type' => 'app.bsky.feed.post',
         ];
 
-        if ($filenames) {
+        if ($attachments) {
             $record['embed'] = [
                 '$type' => 'app.bsky.embed.images',
                 'images' => [],
             ];
-            foreach ($filenames as $filename) {
-                $mimetype = FileHelper::determineMimeType($filename);
-                $body = file_get_contents($filename);
+            foreach ($attachments as $attachment) {
+                $mimetype = FileHelper::determineMimeType($attachment->getFilename());
+                $body = file_get_contents($attachment->getFilename());
                 $response = $this->blueskyApi->request('POST', 'com.atproto.repo.uploadBlob', [], $body, $mimetype);
                 $image = $response->blob;
                 $record['embed']['images'][] =
                     [
-                        'alt' => '',
+                        'alt' => $attachment->getAltText() ?? '',
                         'image' => $image,
                     ];
             }

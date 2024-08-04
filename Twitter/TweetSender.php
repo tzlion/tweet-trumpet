@@ -1,21 +1,23 @@
 <?php
 namespace TzLion\TweetTrumpet\Twitter;
 
+use TzLion\TweetTrumpet\Common\Object\Attachment;
+
 class TweetSender extends TwitterAuthenticated
 {
     /**
      * @param string $message Text of the tweet to tweet
-     * @param array $filenames Filenames of media files to attach
+     * @param Attachment[] $attachments Media files to attach
      * @return array Response from Twitter API
      *
      * @throws \Exception
      */
-    public function tweet($message, array $filenames = [])
+    public function tweet($message, array $attachments = [])
     {
-        if ($filenames) {
+        if ($attachments) {
             $mediaids = [];
-            foreach ($filenames as $filename) {
-                $fileResult = $this->uploadFile($filename);
+            foreach ($attachments as $attachment) {
+                $fileResult = $this->uploadFile($attachment);
                 $mediaids[] = $fileResult['media_id_string'];
             }
             return $this->doTweet($message, $mediaids);
@@ -25,14 +27,15 @@ class TweetSender extends TwitterAuthenticated
     }
 
     /**
-     * @param string $filename
+     * @param Attachment $attachment
      * @return array
      *
      * @throws \Exception
      */
-    private function uploadFile($filename)
+    private function uploadFile(Attachment $attachment)
     {
-        $file = base64_encode(file_get_contents($filename));
+        // todo: alt text
+        $file = base64_encode(file_get_contents($attachment->getFilename()));
         $url = self::TWITTER_UPLOAD_BASE_URL . "/media/upload.json";
         $post["media_data"] = $file;
         return $this->post($url, $post);
