@@ -1,6 +1,6 @@
 {
   "name": "tzlion/tweet-trumpet",
-  "description": "twitter API wrapper",
+  "description": "Twitter/Mastodon/Bluesky API wrapper",
   "license": "MIT",
   "authors": [
     {
@@ -14,9 +14,12 @@
     }
   },
   "require": {
-    "php": ">=5.4",
+    "php": ">=7.4",
+    "ext-curl": "*",
     "ext-json": "*",
     "ext-bcmath": "*",
-    "tzlion/deadend-api-php": "0.2.0"
+    "tzlion/deadend-api-php": "0.2.0",
+    "cjrasmussen/bluesky-api": "^2.0",
+    "cjrasmussen/mastodon-api": "^1.2"
   }
 }

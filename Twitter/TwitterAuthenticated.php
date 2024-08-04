@@ -1,5 +1,5 @@
 <?php
-namespace TzLion\TweetTrumpet;
+namespace TzLion\TweetTrumpet\Twitter;
 
 abstract class TwitterAuthenticated
 {

@@ -1,5 +1,5 @@
 # Tweet Trumpet
 
-Twitter API wrapper supporting basic searching/retrieving/tweeting functionality.
+Twitter/Mastodon/Bluesky API wrapper supporting basic posting functionality.
 
-Tweeting has been updated for v2 API. Searching and retrieving probably won't work anymore.
+Searching and retrieving was formerly supported for Twitter only but no longer works with the current API.
