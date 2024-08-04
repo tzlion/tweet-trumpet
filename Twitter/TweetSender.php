@@ -8,7 +8,7 @@ class TweetSender extends TwitterAuthenticated
     /**
      * @param string $message Text of the tweet to tweet
      * @param Attachment[] $attachments Media files to attach
-     * @return array Response from Twitter API
+     * @return array Response from Twitter API. ['data']['id'] is the post id
      *
      * @throws \Exception
      */
