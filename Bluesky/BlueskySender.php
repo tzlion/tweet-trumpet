@@ -28,6 +28,10 @@ class BlueskySender extends BlueskyAuthenticated
         if ($facets) {
             $record['facets'] = $facets;
         }
+        $embed = $this->tryCardEmbed($facets);
+        if ($embed) {
+            $record['embed'] = $embed;
+        }
 
         if ($attachments) {
             $record['embed'] = [
@@ -67,6 +71,82 @@ class BlueskySender extends BlueskyAuthenticated
             'record' => $record,
         ];
         return $this->blueskyApi->request('POST', 'com.atproto.repo.createRecord', $args);
+    }
+
+    public function tryCardEmbed(array $facets): ?array
+    {
+        $foundLink = null;
+        foreach ($facets as $facet) {
+            if ($facet['features'][0]['$type'] === 'app.bsky.richtext.facet#link') {
+                $foundLink = $facet['features'][0]['uri'];
+                break;
+            }
+        }
+        if (!$foundLink) {
+            return null;
+        }
+        // yes if we want a card embed we need to do all the legwork ourselves because it doesn't do dick all on the server
+        $content = file_get_contents($foundLink);
+        if (!$content) {
+            return null;
+        }
+        $embed = [
+            '$type' => 'app.bsky.embed.external',
+            'external' => [
+                'uri' => $foundLink,
+                'title' => '',
+                'description' => ''
+            ]
+        ];
+        preg_match_all("/<meta .+?>/i", $content, $metas);
+        foreach ($metas[0] as $meta) {
+            preg_match("/property\s*=\s*(['\"])(.+?)\\1/i", $meta, $propmatches);
+            preg_match("/content\s*=\s*(['\"])(.+?)\\1/i", $meta, $contmatches);
+            if (empty($propmatches[2]) || empty($contmatches[2])) {
+                continue;
+            }
+            switch ($propmatches[2]) {
+                case 'og:title':
+                    $embed['external']['title'] = html_entity_decode($contmatches[2], ENT_QUOTES | ENT_SUBSTITUTE);
+                    break;
+                case 'og:description':
+                    $embed['external']['description'] = html_entity_decode($contmatches[2], ENT_QUOTES | ENT_SUBSTITUTE);
+                case 'og:image':
+                    $blobresponse = $this->transferRemoteImageToBlob(html_entity_decode($contmatches[2], ENT_QUOTES | ENT_SUBSTITUTE));
+                    if ($blobresponse) {
+                        $embed['external']['thumb'] = $blobresponse;
+                    }
+            }
+        }
+        if (!$embed['external']['title']) {
+            return null;
+        }
+        return $embed;
+    }
+
+    public function transferRemoteImageToBlob(string $url): ?object
+    {
+        // not fannying around with relative urls or anything for now
+        if (!preg_match("~^https?://~i", $url)) {
+            return null;
+        }
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $imgContents = curl_exec($ch);
+        if (!$imgContents) {
+            return null;
+        }
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        if (!$contentType) {
+            return null;
+        }
+        $mimeType = explode(";", $contentType)[0];
+        if (!preg_match("~^image/.+$~i", $mimeType)) {
+            return null;
+        }
+        $response = $this->blueskyApi->request('POST', 'com.atproto.repo.uploadBlob', [], $imgContents, $mimeType);
+        return $response && !empty($response->blob) ? $response->blob : null;
     }
 
     // fucking hell
