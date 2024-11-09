@@ -86,7 +86,13 @@ class BlueskySender extends BlueskyAuthenticated
             return null;
         }
         // yes if we want a card embed we need to do all the legwork ourselves because it doesn't do dick all on the server
-        $content = file_get_contents($foundLink);
+        $ch = curl_init($foundLink);
+        if (preg_match("~(^|\.)youtube\.com$~", parse_url($foundLink,PHP_URL_HOST))) {
+            // apparently for youtube to send the opengraph tags consistently we need to pretend to be facebook
+            curl_setopt($ch, CURLOPT_USERAGENT, "facebookexternalhit/1.1");
+        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $content = curl_exec($ch);
         if (!$content) {
             return null;
         }
