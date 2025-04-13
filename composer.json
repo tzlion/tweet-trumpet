@@ -16,6 +16,7 @@
   "require": {
     "php": ">=7.4",
     "ext-curl": "*",
+    "ext-gd": "*",
     "ext-json": "*",
     "ext-bcmath": "*",
     "tzlion/deadend-api-php": "0.2.0",

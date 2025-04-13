@@ -43,11 +43,17 @@ class BlueskySender extends BlueskyAuthenticated
                 $body = file_get_contents($attachment->getFilename());
                 $response = $this->blueskyApi->request('POST', 'com.atproto.repo.uploadBlob', [], $body, $mimetype);
                 $image = $response->blob;
+                [$width, $height] = $this->getImageDimensions($attachment->getFilename(), $mimetype);
                 $record['embed']['images'][] =
                     [
                         'alt' => $attachment->getAltText() ?? '',
-                        'image' => $image,
-                    ];
+                        'image' => $image
+                    ] + (($width && $height) ? [
+                        'aspectRatio' => [
+                            'width' => $width,
+                            'height' => $height
+                        ]
+                    ] : []);
             }
         }
 
@@ -71,6 +77,23 @@ class BlueskySender extends BlueskyAuthenticated
             'record' => $record,
         ];
         return $this->blueskyApi->request('POST', 'com.atproto.repo.createRecord', $args);
+    }
+
+    private function getImageDimensions(string $filename, string $mimetype): array
+    {
+        if ($mimetype === "image/png") {
+            $img = imagecreatefrompng($filename);
+        } else if ($mimetype === "image/jpeg") {
+            $img = imagecreatefromjpeg($filename);
+        } else if ($mimetype === "image/gif") {
+            $img = imagecreatefromgif($filename);
+        } else {
+            $img = null;
+        }
+        if ($img) {
+            return [imagesx($img), imagesy($img)];
+        }
+        return [null, null];
     }
 
     public function tryCardEmbed(array $facets): ?array
